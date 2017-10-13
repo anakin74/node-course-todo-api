@@ -1,60 +1,27 @@
-var mongoose = require('mongoose');
+var express = require('express');
+var bodyParser = require('body-parser');
 
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/TodoApp', {
-  useMongoClient: true,
-});
+var {mongoose} = require('./db/mongoose.js');
+var {Todo} = require('./models/todo.js');
+var {User} = require('./models/user.js');
 
-var Todo = mongoose.model('Todo', {
-  text: {
-    type: String,
-    required: true,
-    minlength: 1,
-    trim: true
-  },
-  completed: {
-    type: Boolean,
-    default: false
-  },
-  completedAt: {
-    type: Number,
-    default: null
-  }
-});
+var app = express();
 
-var User = mongoose.model('Users',{
-  email: {
-    type: String,
-    required: true,
-    minlenght: 1,
-    trim: true
-  }
+app.use(bodyParser.json());
+
+app.post('/todos', (req, res) => {
+  var todo = new Todo({
+    text: req.body.text
+  });
+
+  todo.save().then((doc) => {
+    res.send(doc);
+  },(e) => {
+    res.status(400).send(e);
+  });
 });
 
 
-var newUser = new User({
-  email: '     vdbos.marjolein@gmail.com'
+app.listen(3000, () => {
+  console.log('server started on port 3000');
 });
-
-newUser.save().then((doc) => {
-  console.log('Saved User');
-  console.log(JSON.stringify(doc, undefined, 2));
-}, (e) => {
-  console.log('foutje bij het schrijven van user object', e);
-});
-
-
-var newTodo = new Todo({
-  text: '      edit this video'
-});
-
-newTodo.save().then((doc) => {
-  console.log('Saved Todo');
-  console.log(JSON.stringify(doc, undefined, 2));
-}, (e) => {
-  console.log('unable to save todo', e);
-});
-
-//challenge, create new mongoose model for users
-//email must be require and trimmed type must be a string minlenght must be one
-//create a user entry
